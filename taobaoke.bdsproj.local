@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2010-07-05 11:11:10.958.pas,C:\Users\hety\Documents\Borland Studio Projects\Unit1.pas=F:\k2002's project\Delphi\taobaoke\UntMain.pas</Transaction>
+    <Transaction>2010-07-05 11:11:10.958.dfm,C:\Users\hety\Documents\Borland Studio Projects\Unit1.dfm=F:\k2002's project\Delphi\taobaoke\UntMain.dfm</Transaction>
+    <Transaction>2010-07-05 11:11:19.675.bdsproj,C:\Users\hety\Documents\Borland Studio Projects\Project1.bdsproj=F:\k2002's project\Delphi\taobaoke\taobaoke.bdsproj</Transaction>
+    <Transaction>2010-07-05 11:13:34.026.pas,F:\k2002's project\Delphi\taobaoke\Unit1.pas=F:\k2002's project\Delphi\taobaoke\UntMission.pas</Transaction>
+  </Transactions>
+</BorlandProject>
