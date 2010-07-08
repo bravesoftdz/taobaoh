@@ -22,6 +22,7 @@ type
     //内部变量，阻塞模式时使用
     selfPost:TStrings;
     selfBody:TStrings;
+    selfBodyStream:TMemoryStream;
 
     bget, bpost , bpostdata:boolean;
     frunonce:boolean;
@@ -46,8 +47,10 @@ type
     constructor Create(cookie:TIdCookieManager);
     destructor Destroy; override;
 
+    procedure setReferer(referer:String);
+
     function httpGet(url: String):TStrings;
-    //procedure httpGetStream(url: String;var body:TMemoryStream;runonce:Boolean=false);overload;
+    function httpGetStream(url: String):TStream;
 
     function httpPost(url:String;post:TStrings):TStrings;
     function httpPostStream(url:String;postdata:TIdMultiPartFormDataStream):TStrings;
@@ -78,16 +81,22 @@ begin
   result := self.Terminated;
 end;
 
+procedure ThttpThread.setReferer(referer: String);
+begin
+  http.Request.Referer := referer;
+end;
+
 procedure ThttpThread.Execute;
 begin
   self.FreeOnTerminate := true;
   while not self.Terminated do begin
+    if not downloading then continue;
+
     try
       try
-        downloading := true;
 
         if bget then begin
-          if fgetstream then 
+          if fgetstream then
             http.Get(furl, fbodystream)
           else
             fbody.Text := http.get(furl)
@@ -99,9 +108,7 @@ begin
 
       except
        on E:Exception do begin
-          {showmessage(e.message+#13#10+
-                      'url:'+furl+#13#10+
-                      '');}
+          fbody.Text := e.Message;
         end;
       end;
     finally
@@ -112,7 +119,6 @@ begin
         downloading := false;
       end else begin
         downloading := false;
-        self.Suspend;
       end;
     end;
   end;
@@ -124,13 +130,13 @@ end;
 
 function ThttpThread.httppost(url: String; post: TStrings): TStrings;
 begin
-  downloading := true;
   bget := false;
   bpost := true;
   bpostdata := false;
   
   initPost(url, post);
 
+  downloading := true;
   self.Resume;
   while self.downloading do sleep(1);
   result := fbody;
@@ -138,25 +144,39 @@ end;
 
 function ThttpThread.httpget(url: String): TStrings;
 begin
-  downloading := true;
+
   bget := true;
   bpost := false;
   bpostdata := false;
 
   init(url);
+  downloading := true;
   self.Resume;
   while self.downloading do sleep(1);
   result := fbody;
 end;
 
+function ThttpThread.httpGetStream(url: String): TStream;
+begin
+  bget := true;
+  bpost := false;
+  bpostdata := false;
+
+  init(url, nil, selfBodyStream);
+  downloading := true;
+  self.Resume;
+  while self.downloading do sleep(1);
+  result := self.fbodystream;
+end;
+
 function ThttpThread.httpPostStream(url: String;postdata: TIdMultiPartFormDataStream): TStrings;
 begin
-  downloading := true;
   bget := false;
   bpost := false;
   bpostdata := true;
 
   init(url, postdata, selfBody, false);
+  downloading := true;
   self.Resume;
   while self.downloading do sleep(1);
   result := fbody;
@@ -178,6 +198,7 @@ begin
 
   selfBody := TStringList.Create;
   selfPost := TStringList.Create;
+  selfBodyStream := TMemoryStream.Create;
 
   bget := false;
   bpost := false;
@@ -192,8 +213,10 @@ destructor ThttpThread.Destroy;
 begin
   http.Free;
   cookie.Free;
+
   selfBody.Free;
   selfPost.Free;
+  selfBodyStream.Free;
 
   synchronize(deccount);
   inherited

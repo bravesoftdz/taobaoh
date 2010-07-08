@@ -37,6 +37,8 @@ type
     currentContentIndex:Integer;
     accountList:TStringList;
     contentList:TStringList;
+    fname: String;
+    procedure setName(const Value: String);
 
     procedure setAccounts(const Value: String);
     procedure setLoginType(const Value: String);
@@ -56,6 +58,7 @@ type
     procedure initAccountSet();
     procedure initContentSet();
   public
+    property name           :String   read fname            write setName;
     property listTimer      :Integer  read flistTimer       write setListTimer;
     property sendTimer      :Integer  read fsendTimer       write setSendTimer;
     property sendType       :String   read fsendType        write setSendType;
@@ -81,6 +84,9 @@ type
     procedure cookieSet;
     { Private declarations }
   protected
+    //成功数， 总请求数， 状态(0停止 ，1运行)
+    successCount, requestCount, state:Integer;
+    logon:Boolean;
     httpThreads :TStringList;
     mc :TMissionConfig;
     procedure cookieSendSet;
@@ -88,17 +94,23 @@ type
     function getHTTPThread(cookie:TIdCookieManager):THTTPThread;
     procedure killHTTPThread(http:THTTPThread);
 
-    procedure Execute; override;
+    procedure Execute;virtual;
   public
     { Public declarations }
     lastHttpResponse:TStrings;
     lastHttpCookie:TIdCookieManager;
-    constructor create;
+    constructor create(iniFile:TIniFile; name:String);
     destructor destroy;Override;
     //加载任务属性
     procedure init(iniFile:TIniFile; name:String);
     procedure start;
+    procedure stop;
     function getCurrentThreads:Integer;
+    function getSuccessCount:Integer;
+    function getRequestCount:Integer;
+    function getState:Integer;
+    function getStateName:String;
+    function getMissionName:String;
   end;
 
 implementation
@@ -113,6 +125,34 @@ begin
   result := http;
 end;
 
+function TMission.getMissionName: String;
+begin
+  result := mc.name;
+end;
+
+function TMission.getRequestCount: Integer;
+begin
+  result := requestCount;
+end;
+
+function TMission.getState: Integer;
+begin
+  result := state;
+end;
+
+function TMission.getStateName: String;
+begin
+  if state = 0 then
+    result := '停止'
+  else
+    result := '运行中';
+end;
+
+function TMission.getSuccessCount: Integer;
+begin
+  result := successCount; 
+end;
+
 procedure TMission.cookieSendSet;
 begin
 
@@ -123,7 +163,7 @@ begin
 
 end;
 
-constructor TMission.create;
+constructor TMission.create(iniFile:TIniFile; name:String);
 begin
   inherited create(true);
 
@@ -131,7 +171,9 @@ begin
   httpThreads := TStringList.Create;
   lastHttpResponse := TStringList.Create;
   lastHttpCookie := TIdCookieManager.Create(nil);
-  
+  successCount := 0;
+
+  init(iniFile, name);
 end;
 
 destructor TMission.destroy; 
@@ -146,18 +188,7 @@ end;
 
 procedure TMission.Execute;
 begin
-  self.FreeOnTerminate := true;
-  while not self.Terminated do begin
-    try
-  
-    finally
-      if true then begin
-        self.Terminate ;
-      end else begin
-        self.Suspend;
-      end;
-    end;
-  end;
+
 end;
 
 function TMission.getCurrentThreads: Integer;
@@ -172,6 +203,7 @@ end;
 
 procedure TMission.init(iniFile: TIniFile; name: String);
 begin
+  mc.name := name;
   mc.flistTimer := iniFile.ReadInteger(name, 'listTimer', 0);
   mc.fsendTimer := iniFile.ReadInteger(name, 'sendTimer', 0);
   mc.fcontentBoardId := iniFile.ReadString(name, 'contentBoardId', '');
@@ -195,14 +227,19 @@ end;
 
 function TMission.login:Boolean;
 begin
-
+  logon := true;
 end;
 
 procedure TMission.start;
 begin
-
+  state := 1;
 end;
 
+
+procedure TMission.stop;
+begin
+  state := 0;
+end;
 
 { TMissionConfig }
 
@@ -329,6 +366,11 @@ end;
 procedure TMissionConfig.setLoginUrl(const Value: String);
 begin
   floginUrl := Value;
+end;
+
+procedure TMissionConfig.setName(const Value: String);
+begin
+  fname := Value;
 end;
 
 procedure TMissionConfig.setSendTimer(const Value: Integer);

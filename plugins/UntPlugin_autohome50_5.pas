@@ -11,16 +11,30 @@ type
     { Private declarations }
   protected
     function login:Boolean;OverLoad;
+    procedure Execute;Override;
   public
     { Public declarations }
-    procedure start;OverLoad;
-    procedure replyTest;
+    procedure start;overload;
+    procedure reply;
   end;
 
 implementation
 
+uses UntInputValidCode;
+
 
 { TAutohome50_5 }
+
+procedure TAutohome50_5.Execute;
+begin
+  inherited;
+  while not self.Terminated do begin
+    if not self.logon then login;
+
+    reply;
+    sleep(mc.sendTimer);
+  end;
+end;
 
 function TAutohome50_5.login:Boolean;
 var account:TAccount;
@@ -36,27 +50,29 @@ begin
   self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
 
   killHttpThread(http);
+  inherited login;
   result := true;
 end;
 
 
-procedure TAutohome50_5.replyTest;
+procedure TAutohome50_5.reply;
 var
 http:THTTPThread;
 postdata: TIdMultiPartFormDataStream;
-body, action, validform:String;
+body, action, validform, validcode, topicId:String;
 account:TAccount;
-loginUrl:String;
+url:String;
+frmInputValidCode:TFrmInputValidCode;
 begin
-  account := self.mc.getNextAccount;
-  loginUrl := self.mc.loginUrl;
-  loginUrl := StringReplace(loginUrl, '$name$', account.name, [rfReplaceAll]);
-  loginUrl := StringReplace(loginUrl, '$password$', account.password, [rfReplaceAll]);
-  http := self.getHTTPThread(nil);
-  http.httpPost(loginUrl, nil);
-  //self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
+  http := self.getHTTPThread(self.lastHttpCookie);
 
-  //http := self.getHTTPThread(self.lastHttpCookie);
+  url := mc.boardUrl;
+  self.lastHttpResponse.Text := http.httpGet(url).Text;
+  body := copy(self.lastHttpResponse.Text, pos(mc.listBegin, self.lastHttpResponse.Text)+length(mc.listBegin),
+              length(self.lastHttpResponse.Text));
+
+  //<tr *><td *>*</td>*<a *href="/bbs/thread-c-$contentBoardId$-#contentId#-1.html"*>#title#</a>*<td *>*<a *>#author#</a>*</td><td class="nums">*</td></tr>
+
   self.lastHttpResponse.Text := http.httpGet('http://club.autohome.com.cn/bbs/thread-c-153-6170009-1.html').Text;
   body := copy(self.lastHttpResponse.Text,
     pos('id="postform" action="',self.lastHttpResponse.Text) + length('id="postform" action="'), length(self.lastHttpResponse.Text));
@@ -68,29 +84,27 @@ begin
   postdata := TIdMultiPartFormDataStream.Create;
   postdata.AddFormField('target', '');
   postdata.AddFormField('txtContent', body);
-  postdata.AddFormField('upPic', '');
+  //postdata.AddFormField('upPic', '');
   postData.AddFormField('validform', validform);
-  postData.AddFormField('validcode', '9852');
 
-  //9852的验证cookie
-  http.cookie.AddCookie('validcode=t%2fe8lKsa1QdrlUhWNCba%2bQ%3d%3d', '.autohome.com.cn');
-  self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
+  frmInputValidCode := TFrmInputValidCode.Create(nil);
+  validcode := frmInputValidCode.showImg(http.httpGetStream('http://club.autohome.com.cn/validcodeimage.aspx?0.7975265414743804'));
+  postData.AddFormField('validcode', validcode);
+
+  //5567的验证cookie    http://club.autohome.com.cn/validcodeimage.aspx?0.7975265414743804
+  //http.cookie.AddCookie('validcode=Gokj%2bk%2fIfLKLZqUFn31MVQ%3d%3d', '.autohome.com.cn');
 
   self.lastHttpResponse.Clear;
+  http.setReferer('http://club.autohome.com.cn/bbs/thread-c-153-6170009-1.html');
   self.lastHttpResponse.Text := http.httpPostStream('http://club.autohome.com.cn/bbs/'+action, postData).Text;
   self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
+
+  self.killHTTPThread(http);
 end;
 
 procedure TAutohome50_5.start;
-var iniFile:TIniFile;
-http:THTTPThread;
 begin
-  iniFile := TIniFile.Create(ExtractFilePath(Application.ExeName)+'mission.ini');
-  init(iniFile, 'autohome_50*5');
-  //login;
-
-  //http := self.getHTTPThread(self.lastHttpCookie);
-  //self.lastHttpResponse := http.httpGet(self.mc.boardUrl);
+  inherited;
 end;
 
 end.
