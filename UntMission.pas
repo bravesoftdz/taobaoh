@@ -3,7 +3,8 @@ unit UntMission;
 interface
 
 uses
-classes, inifiles, IdCookieManager, UntHTTPThread, UntCommon;
+classes, Windows, Forms, inifiles, IdCookieManager, UntHTTPThread, UntCommon,
+IdMultipartFormData;
 
 type
   TAccount = class(TObject)
@@ -81,30 +82,39 @@ type
 
   TMission = class(TThread)
   private
-    procedure cookieSet;
+
     { Private declarations }
   protected
-    //成功数， 总请求数， 状态(0停止 ，1运行)
+    //成功数， 总请求数， 状态(-1登录失败, 0停止 ，1运行)
     successCount, requestCount, state:Integer;
     logon:Boolean;
     httpThreads :TStringList;
     mc :TMissionConfig;
     procedure cookieSendSet;
     function login:Boolean;
+
+    //
     function getHTTPThread(cookie:TIdCookieManager):THTTPThread;
     procedure killHTTPThread(http:THTTPThread);
+    procedure httpGet(http:THTTPThread; url:String);
+    procedure httpPostStream(http:THTTPThread; url:String; postData:TIdMultiPartFormDataStream);
+    function httpGetStream(http:THTTPThread; url:String):TStream;
 
-    procedure Execute;virtual;
+    procedure Delay(msecs: integer);
+    procedure Execute;override;
   public
     { Public declarations }
-    lastHttpResponse:TStrings;
+    lastHttpResponse, lastHttpRequest:TStrings;
     lastHttpCookie:TIdCookieManager;
     constructor create(iniFile:TIniFile; name:String);
     destructor destroy;Override;
+
     //加载任务属性
     procedure init(iniFile:TIniFile; name:String);
-    procedure start;
+    procedure start;virtual;
     procedure stop;
+
+
     function getCurrentThreads:Integer;
     function getSuccessCount:Integer;
     function getRequestCount:Integer;
@@ -142,10 +152,14 @@ end;
 
 function TMission.getStateName: String;
 begin
-  if state = 0 then
-    result := '停止'
-  else
-    result := '运行中';
+  case state of
+    -1:result :='登录失败';
+    0:result :='停止';
+    1:result :='运行中';
+    else result := '未知';
+  end;
+
+
 end;
 
 function TMission.getSuccessCount: Integer;
@@ -153,12 +167,30 @@ begin
   result := successCount; 
 end;
 
-procedure TMission.cookieSendSet;
+procedure TMission.httpGet(http: THTTPThread; url: String);
 begin
-
+  self.lastHttpResponse.Text := http.httpGet(url).Text;
+  self.lastHttpRequest.Text := (http.getRequest.RawHeaders.Text);
+  self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
+  inc(self.requestCount);
 end;
 
-procedure TMission.cookieSet;
+function TMission.httpGetStream(http: THTTPThread; url: String): TStream;
+begin
+  result := http.httpGetStream(url);
+  inc(self.requestCount);
+end;
+
+procedure TMission.httpPostStream(http: THTTPThread; url: STring;
+  postData: TIdMultiPartFormDataStream);
+begin
+  self.lastHttpResponse.Text := http.httpPostStream(url , postData).Text;
+  self.lastHttpRequest.Text := http.getRequest.RawHeaders.Text;
+  self.lastHttpCookie.CookieCollection.Assign(http.cookie.CookieCollection);
+  inc(self.requestCount);
+end;
+
+procedure TMission.cookieSendSet;
 begin
 
 end;
@@ -170,6 +202,7 @@ begin
   mc := TMissionConfig.Create;
   httpThreads := TStringList.Create;
   lastHttpResponse := TStringList.Create;
+  lastHttpRequest := TStringList.Create;
   lastHttpCookie := TIdCookieManager.Create(nil);
   successCount := 0;
 
@@ -181,6 +214,7 @@ begin
   mc.Free;
   httpThreads.Free;
   lastHttpResponse.Free;
+  lastHttpRequest.Free;
   lastHttpCookie.Free;
 
   inherited;
@@ -228,6 +262,7 @@ end;
 function TMission.login:Boolean;
 begin
   logon := true;
+  result := logon;
 end;
 
 procedure TMission.start;
@@ -239,6 +274,18 @@ end;
 procedure TMission.stop;
 begin
   state := 0;
+  self.Suspend;
+end;
+
+procedure TMission.Delay(msecs:integer);
+var
+FirstTickCount:longint;
+begin
+  FirstTickCount := GetTickCount;
+  repeat
+    SleepEx(1, true);
+    Application.ProcessMessages;
+  until GetTickCount-FirstTickCount > msecs;
 end;
 
 { TMissionConfig }
@@ -254,7 +301,7 @@ begin
   if accountList = nil then
     self.initAccountSet;
 
-  if accountList.Count = 0 then result := nil;
+  //if accountList.Count = 0 then result := nil;
   
   {
   ;登录类型 ran （随机) list（循环）
@@ -394,5 +441,7 @@ procedure TAccount.setPassword(const Value: String);
 begin
   fpassword := Value;
 end;
+
+
 
 end.

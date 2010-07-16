@@ -20,6 +20,7 @@ object FrmInputValidCode: TFrmInputValidCode
     Top = 8
     Width = 161
     Height = 89
+    OnMouseDown = ImgValidCodeMouseDown
   end
   object EdtValidCode: TEdit
     Left = 8

@@ -2,7 +2,7 @@ object FrmMain: TFrmMain
   Left = 0
   Top = 0
   Caption = 'taobaoke'
-  ClientHeight = 400
+  ClientHeight = 431
   ClientWidth = 661
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -11,10 +11,11 @@ object FrmMain: TFrmMain
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 16
+    Left = 8
     Top = 8
     Width = 84
     Height = 13
@@ -24,7 +25,7 @@ object FrmMain: TFrmMain
     Left = 8
     Top = 27
     Width = 641
-    Height = 185
+    Height = 134
     Columns = <
       item
         Caption = #20219#21153#21517
@@ -56,10 +57,11 @@ object FrmMain: TFrmMain
       FFFFFF000000000000000000}
     TabOrder = 0
     ViewStyle = vsReport
+    OnSelectItem = LVMissionListSelectItem
   end
   object BtnStart: TButton
     Left = 8
-    Top = 218
+    Top = 167
     Width = 75
     Height = 25
     Caption = #24320#22987
@@ -67,35 +69,85 @@ object FrmMain: TFrmMain
     TabOrder = 1
     OnClick = BtnStartClick
   end
-  object MemLog: TMemo
-    Left = 8
-    Top = 249
-    Width = 641
-    Height = 143
-    ScrollBars = ssVertical
-    TabOrder = 2
-  end
   object BtnStop: TButton
     Left = 89
-    Top = 218
+    Top = 167
     Width = 75
     Height = 25
     Caption = #20572#27490
     Enabled = False
-    TabOrder = 3
+    TabOrder = 2
+    OnClick = BtnStopClick
   end
   object BitBtn1: TBitBtn
     Left = 248
-    Top = 218
+    Top = 167
     Width = 75
     Height = 25
-    Caption = 'BitBtn1'
-    TabOrder = 4
+    Caption = #27491#21017#27979#35797
+    TabOrder = 3
     OnClick = BitBtn1Click
   end
+  object PCLog: TPageControl
+    Left = 0
+    Top = 198
+    Width = 661
+    Height = 233
+    ActivePage = TSResponse
+    Align = alBottom
+    Style = tsFlatButtons
+    TabOrder = 4
+    object TSResponse: TTabSheet
+      Caption = 'Response'
+      object MemResponse: TMemo
+        Left = 0
+        Top = 0
+        Width = 653
+        Height = 202
+        Align = alClient
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
+    object TSCookie: TTabSheet
+      Caption = 'Cookie'
+      ImageIndex = 1
+      object MemCookie: TMemo
+        Left = 0
+        Top = 0
+        Width = 653
+        Height = 202
+        Align = alClient
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
+    object TabSheet1: TTabSheet
+      Caption = 'Request'
+      ImageIndex = 2
+      object MemRequest: TMemo
+        Left = 0
+        Top = 0
+        Width = 653
+        Height = 202
+        Align = alClient
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
+  end
+  object Button1: TButton
+    Left = 329
+    Top = 167
+    Width = 75
+    Height = 25
+    Caption = #39564#35777#27979#35797
+    TabOrder = 5
+    OnClick = Button1Click
+  end
   object IdCookieManager2: TIdCookieManager
-    Left = 368
-    Top = 224
+    Left = 488
+    Top = 173
   end
   object IdHTTP1: TIdHTTP
     MaxLineAction = maException
@@ -109,19 +161,20 @@ object FrmMain: TFrmMain
     Request.BasicAuthentication = False
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
     HTTPOptions = [hoForceEncodeParams]
-    Left = 408
-    Top = 224
+    Left = 552
+    Top = 173
   end
   object PopupMenu1: TPopupMenu
-    Left = 328
-    Top = 224
+    Left = 448
+    Top = 173
     object N1: TMenuItem
       Caption = #26242#20572
     end
   end
   object TimerDisp: TTimer
+    Interval = 10000
     OnTimer = TimerDispTimer
     Left = 176
-    Top = 216
+    Top = 165
   end
 end

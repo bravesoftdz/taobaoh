@@ -55,6 +55,8 @@ type
     function httpPost(url:String;post:TStrings):TStrings;
     function httpPostStream(url:String;postdata:TIdMultiPartFormDataStream):TStrings;
 
+    function getRequest():TIdHTTPRequest;
+
     function isTerminated: boolean;
 
   end;
@@ -96,9 +98,10 @@ begin
       try
 
         if bget then begin
-          if fgetstream then
+          if fgetstream then begin
+            fbodystream.Position := 0 ;
             http.Get(furl, fbodystream)
-          else
+          end else
             fbody.Text := http.get(furl)
         end else if bpost then begin
           fbody.Text := http.Post(furl,fpost);
@@ -127,6 +130,11 @@ end;
 
 
 
+
+function ThttpThread.getRequest: TIdHTTPRequest;
+begin
+  result := http.Request;
+end;
 
 function ThttpThread.httppost(url: String; post: TStrings): TStrings;
 begin
@@ -183,18 +191,26 @@ begin
 end;
 
 constructor ThttpThread.Create(cookie:TIdCookieManager);
+var i:integer;
+cookieStr :String;
 begin
   inherited create(true);
-  
-  self.cookie := TIdCookieManager.Create(nil);
-  if cookie <> nil then
-    self.cookie.CookieCollection.Assign(cookie.CookieCollection);
 
   http := TIDhttp.Create(nil);
-  http.CookieManager := self.cookie;
+
   http.Request.UserAgent := 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; InfoPath.2)';
   http.HandleRedirects := true;
-  http.ProtocolVersion :=   pv1_0;
+  http.AllowCookies := true;
+  self.cookie := TIdCookieManager.Create(nil);
+  http.CookieManager := self.cookie;
+  if cookie <> nil then begin
+    for i := 0 to cookie.CookieCollection.Count - 1 do begin
+      self.cookie.AddCookie2(cookie.CookieCollection[i].CookieText, cookie.CookieCollection[i].Domain);
+    end;
+  end;
+  
+
+
 
   selfBody := TStringList.Create;
   selfPost := TStringList.Create;

@@ -10,7 +10,8 @@ uses
   UntInputValidCode in 'UntInputValidCode.pas' {FrmInputValidCode},
   GIFImage in 'GIFImage.pas',
   PerlRegEx in 'common\PerlRegEx.pas',
-  pcre in 'common\pcre.pas';
+  pcre in 'common\pcre.pas',
+  UntLog in 'UntLog.pas';
 
 {$R *.res}
 
