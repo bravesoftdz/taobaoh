@@ -206,6 +206,7 @@ begin
   if cookie <> nil then begin
     for i := 0 to cookie.CookieCollection.Count - 1 do begin
       self.cookie.AddCookie2(cookie.CookieCollection[i].CookieText, cookie.CookieCollection[i].Domain);
+      TIdURI.
     end;
   end;
   

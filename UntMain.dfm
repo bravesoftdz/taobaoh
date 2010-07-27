@@ -52,9 +52,9 @@ object FrmMain: TFrmMain
         Width = 78
       end>
     Items.ItemData = {
-      01460000000300000000000000FFFFFFFFFFFFFFFF0000000000000000013100
-      00000000FFFFFFFFFFFFFFFF000000000000000001320000000000FFFFFFFFFF
-      FFFFFF000000000000000000}
+      03520000000300000000000000FFFFFFFFFFFFFFFF00000000FFFFFFFF000000
+      0001310000000000FFFFFFFFFFFFFFFF00000000FFFFFFFF0000000001320000
+      000000FFFFFFFFFFFFFFFF00000000FFFFFFFF0000000000}
     TabOrder = 0
     ViewStyle = vsReport
     OnSelectItem = LVMissionListSelectItem
@@ -85,6 +85,8 @@ object FrmMain: TFrmMain
     Width = 75
     Height = 25
     Caption = #27491#21017#27979#35797
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 3
     OnClick = BitBtn1Click
   end
@@ -146,27 +148,24 @@ object FrmMain: TFrmMain
     OnClick = Button1Click
   end
   object IdCookieManager2: TIdCookieManager
-    Left = 488
-    Top = 173
+    Left = 416
+    Top = 269
   end
   object IdHTTP1: TIdHTTP
-    MaxLineAction = maException
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
     Request.ContentLength = -1
-    Request.ContentRangeEnd = 0
-    Request.ContentRangeStart = 0
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = False
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
     HTTPOptions = [hoForceEncodeParams]
-    Left = 552
-    Top = 173
+    Left = 512
+    Top = 269
   end
   object PopupMenu1: TPopupMenu
-    Left = 448
-    Top = 173
+    Left = 272
+    Top = 269
     object N1: TMenuItem
       Caption = #26242#20572
     end
@@ -174,7 +173,7 @@ object FrmMain: TFrmMain
   object TimerDisp: TTimer
     Interval = 10000
     OnTimer = TimerDispTimer
-    Left = 176
-    Top = 165
+    Left = 168
+    Top = 269
   end
 end

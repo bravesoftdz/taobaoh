@@ -136,7 +136,7 @@ begin
   iniFile.ReadSections(sections);
   setLength(missionList, sections.Count - 1);
 
-  LVMissionList.Items.Clear;
+  LVMissionList.Clear;
 
 
   for i := 0 to sections.Count - 1 do begin
